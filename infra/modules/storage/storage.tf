@@ -12,6 +12,15 @@ resource "google_storage_bucket" "artifacts" {
   depends_on    = [var.required_apis]
 }
 
+resource "google_storage_bucket" "adk-bucket" {
+  name          = "${var.gcp_project_id}-adk-bucket"
+  project       = var.gcp_project_id
+  location      = "us-central1"
+  uniform_bucket_level_access = true
+  force_destroy = true
+  depends_on    = [var.required_apis]
+}
+
 resource "google_storage_bucket_iam_member" "lvm_video_server" {
   bucket = google_storage_bucket.artifacts.name
   role   = "roles/storage.objectCreator"

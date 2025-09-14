@@ -387,6 +387,9 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+adk = [
+    { name = "google-adk" },
+]
 agent-engines = [
     { name = "cloudpickle" },
     { name = "google-cloud-logging" },
@@ -785,6 +788,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "google-adk" },
+    { name = "google-cloud-aiplatform", extra = ["adk", "agent-engines"] },
     { name = "google-genai" },
     { name = "loguru" },
     { name = "opencv-python" },
@@ -794,6 +798,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "google-adk", specifier = ">=1.13.0" },
+    { name = "google-cloud-aiplatform", extras = ["adk", "agent-engines"], specifier = ">=1.111.0" },
     { name = "google-genai", specifier = ">=1.32.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "opencv-python", specifier = ">=4.12.0.88" },

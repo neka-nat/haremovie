@@ -1,0 +1,5 @@
+google-cloud-aiplatform[adk,agent-engines]
+google-genai
+loguru
+opencv-python-headless
+pillow
