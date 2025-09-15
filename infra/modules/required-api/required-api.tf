@@ -2,6 +2,7 @@ resource "google_project_service" "required_apis" {
   for_each = toset([
     "aiplatform.googleapis.com",
     "storage.googleapis.com",
+    "cloudtasks.googleapis.com",
   ])
 
   service            = each.key

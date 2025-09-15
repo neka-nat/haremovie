@@ -9,3 +9,11 @@ module "storage" {
   bucket_name = var.bucket_name
   required_apis = module.required_api.required_apis
 }
+
+module "cloud_tasks" {
+  source = "./modules/cloud-tasks"
+  gcp_project_id = var.gcp_project_id
+  primary_region = var.primary_region
+  queue_name = var.queue_name
+  required_apis = module.required_api.required_apis
+}

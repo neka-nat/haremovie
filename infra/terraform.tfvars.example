@@ -1,3 +1,4 @@
 gcp_project_id = ""
 primary_region = ""
 bucket_name    = ""
+queue_name     = ""
