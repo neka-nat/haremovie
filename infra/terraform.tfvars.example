@@ -1,4 +1,5 @@
-gcp_project_id = ""
+gcp_project_id     = ""
+gcp_project_number = ""
 primary_region = ""
 bucket_name    = ""
 queue_name     = ""

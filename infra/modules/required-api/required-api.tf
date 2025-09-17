@@ -3,6 +3,7 @@ resource "google_project_service" "required_apis" {
     "aiplatform.googleapis.com",
     "storage.googleapis.com",
     "cloudtasks.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
   ])
 
   service            = each.key

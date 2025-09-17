@@ -17,3 +17,13 @@ async def health():
 @app.post("/tasks/create")
 async def create_task():
     return {"message": "Task created"}
+
+
+@app.post("/tasks/{task_id}")
+async def get_task(task_id: str):
+    return {"message": "Task retrieved"}
+
+
+@app.post("/tasks/{task_id}/result")
+async def get_task_result(task_id: str):
+    return {"message": "Task result retrieved"}

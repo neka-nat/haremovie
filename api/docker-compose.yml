@@ -7,6 +7,21 @@ services:
       - "${TASKS_PORT:-8123}:8123"
     environment:
       APP_ENGINE_EMULATOR_HOST: http://localhost:8080
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   haremovie_api:
     build:
       context: .
@@ -20,3 +35,4 @@ services:
       - .env
     depends_on:
       - gcloud-tasks-emulator
+      - db

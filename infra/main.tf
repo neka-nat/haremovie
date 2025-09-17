@@ -5,6 +5,7 @@ module "required_api" {
 module "storage" {
   source = "./modules/storage"
   gcp_project_id = var.gcp_project_id
+  gcp_project_number = var.gcp_project_number
   primary_region = var.primary_region
   bucket_name = var.bucket_name
   required_apis = module.required_api.required_apis

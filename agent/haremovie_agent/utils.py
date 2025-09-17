@@ -2,6 +2,8 @@ from google.genai import types
 from google.adk.tools.tool_context import ToolContext
 from loguru import logger
 
+from .storage import upload_artifact
+
 
 async def get_artifact_images_from_ids(ids: list[str], tool_context: ToolContext) -> list[types.Part]:
     parts: list[types.Part] = []
@@ -26,7 +28,10 @@ async def get_artifact_images_from_ids(ids: list[str], tool_context: ToolContext
 
 
 async def save_artifact_from_llm_response(
-    response: types.GenerateContentResponse, tool_context: ToolContext, image_id: str
+    response: types.GenerateContentResponse,
+    tool_context: ToolContext,
+    image_id: str,
+    save_storage: bool = True,
 ) -> None:
     out_part = None
     for part in response.candidates[0].content.parts:
@@ -47,4 +52,6 @@ async def save_artifact_from_llm_response(
             ),
         ),
     )
+    if save_storage:
+        upload_artifact(out_part, image_id)
     logger.info(f"Added image artifact: {image_id}")

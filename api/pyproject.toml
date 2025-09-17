@@ -8,7 +8,11 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "alembic>=1.16.5",
     "fastapi[all]>=0.116.1",
+    "google-cloud-aiplatform[adk,agent-engines]>=1.114.0",
+    "loguru>=0.7.3",
+    "sqlmodel>=0.0.25",
 ]
 
 [build-system]
