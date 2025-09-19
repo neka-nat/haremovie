@@ -1,18 +1,18 @@
 import os
 from uuid import UUID
 
-from loguru import logger
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from google.cloud import storage
 from google.genai import types
+from loguru import logger
 from sqlmodel import Session
 from vertexai import agent_engines
 from vertexai.agent_engines import AgentEngine
 
+from haremovie_api.db import get_session, save_task_result, upsert_task
+from haremovie_api.models import Task, TaskResult, TaskStatus
 from haremovie_api.requests import RunTaskRequest
-from haremovie_api.db import get_session, upsert_task, save_task_result
-from haremovie_api.models import Task, TaskStatus, TaskResult
-from haremovie_api.storage import get_storage_client, download_artifact
+from haremovie_api.storage import download_artifact, get_storage_client
 
 app = FastAPI()
 
@@ -88,11 +88,16 @@ async def run_task(
             logger.info(event)
             parts = event["content"]["parts"]
             for part in parts:
-                if "function_response" in part and part["function_response"].get("name") == "generate_video":
+                if (
+                    "function_response" in part
+                    and part["function_response"].get("name") == "generate_video"
+                ):
                     video_url = part["function_response"]["response"].get("video_url")
         if video_url:
             upsert_task(db, Task(id=task.id, status=TaskStatus.COMPLETED))
-            save_task_result(db, TaskResult(id=uuid4(), task_id=task.id, video_url=video_url))
+            save_task_result(
+                db, TaskResult(id=uuid4(), task_id=task.id, video_url=video_url)
+            )
             return {"session_id": session["id"]}
         else:
             upsert_task(db, Task(id=task.id, status=TaskStatus.FAILED))
@@ -102,4 +107,3 @@ async def run_task(
         if task:
             upsert_task(db, Task(id=task.id, status=TaskStatus.FAILED))
         raise
-

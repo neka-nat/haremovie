@@ -1,11 +1,11 @@
 import os
 from uuid import uuid4
 
-from fastapi import FastAPI, Depends, HTTPException
-from google.cloud import tasks_v2, storage
+import grpc
+from fastapi import Depends, FastAPI, HTTPException
+from google.cloud import storage, tasks_v2
 from google.cloud.tasks_v2 import CloudTasksGrpcTransport
 from google.protobuf import duration_pb2
-import grpc
 from loguru import logger
 from sqlmodel import Session, select
 
@@ -71,13 +71,20 @@ async def create_task(
     request: CreateTaskRequest,
     storage_client: storage.Client = Depends(get_storage_client),
 ) -> CreateTaskResponse:
-    if os.getenv("HAREMOVIE_WORKER_URL") and os.getenv("HAREMOVIE_WORKER_URL") not in ["http://localhost:8001", "http://worker:8001"]:
+    if os.getenv("HAREMOVIE_WORKER_URL") and os.getenv("HAREMOVIE_WORKER_URL") not in [
+        "http://localhost:8001",
+        "http://worker:8001",
+    ]:
         client = tasks_v2.CloudTasksClient()
     else:
         channel = grpc.insecure_channel("gcloud-tasks-emulator:8123")
         transport = CloudTasksGrpcTransport(channel=channel)
         client = tasks_v2.CloudTasksClient(transport=transport)
-    parent = client.queue_path(os.environ["GOOGLE_CLOUD_PROJECT"], os.environ["GOOGLE_CLOUD_LOCATION"], "haremovie-agent-queue")
+    parent = client.queue_path(
+        os.environ["GOOGLE_CLOUD_PROJECT"],
+        os.environ["GOOGLE_CLOUD_LOCATION"],
+        "haremovie-agent-queue",
+    )
     logger.info(f"Parent: {parent}")
     task_id = uuid4()
     request_for_worker = _upload_input_artifacts(storage_client, request)
@@ -104,8 +111,12 @@ async def get_task(task_id: str, db: Session = Depends(get_session)) -> Task:
 
 
 @app.post("/tasks/{task_id}/result")
-async def get_task_result(task_id: str, db: Session = Depends(get_session)) -> TaskResult:
-    task_result = db.exec(select(TaskResult).where(TaskResult.task_id == task_id)).first()
+async def get_task_result(
+    task_id: str, db: Session = Depends(get_session)
+) -> TaskResult:
+    task_result = db.exec(
+        select(TaskResult).where(TaskResult.task_id == task_id)
+    ).first()
     if not task_result:
         raise HTTPException(status_code=404, detail="Task result not found")
     return task_result

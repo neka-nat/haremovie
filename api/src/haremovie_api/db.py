@@ -1,6 +1,6 @@
 import os
 
-from sqlmodel import create_engine, Session, select
+from sqlmodel import Session, create_engine, select
 
 from haremovie_api.models import Task, TaskResult
 
