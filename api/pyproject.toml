@@ -12,6 +12,7 @@ dependencies = [
     "fastapi[all]>=0.116.1",
     "google-cloud-aiplatform[adk,agent-engines]>=1.114.0",
     "loguru>=0.7.3",
+    "psycopg2>=2.9.10",
     "sqlmodel>=0.0.25",
 ]
 

@@ -36,3 +36,19 @@ services:
     depends_on:
       - gcloud-tasks-emulator
       - db
+  worker:
+    image: haremovie_api:latest
+    command: ["fastapi", "run", "src/haremovie_api/worker.py", "--host", "0.0.0.0", "--port", "8001"]
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/app
+    environment:
+      - STORAGE_EMULATOR_HOST=http://gcs:4443
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - gcloud-tasks-emulator
+volumes:
+  db_data:

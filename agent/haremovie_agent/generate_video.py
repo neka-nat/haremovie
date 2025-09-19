@@ -80,6 +80,7 @@ async def generate_video(
         return {
             "status": "success",
             "video_id": video_id,
+            "video_url": video_uri,
             "last_frame_id": last_frame_id,
         }
     else:

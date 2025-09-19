@@ -1,6 +1,8 @@
 import os
 
-from sqlmodel import create_engine, Session
+from sqlmodel import create_engine, Session, select
+
+from haremovie_api.models import Task, TaskResult
 
 
 def get_db_uri() -> str:
@@ -28,3 +30,21 @@ def get_session():
         yield db
     finally:
         db.close()
+
+
+def upsert_task(db: Session, task: Task) -> Task:
+    task = db.exec(select(Task).where(Task.id == task.id)).first()
+    if task:
+        db.add(task)
+    else:
+        db.add(task)
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+def save_task_result(db: Session, task_result: TaskResult) -> TaskResult:
+    db.add(task_result)
+    db.commit()
+    db.refresh(task_result)
+    return task_result

@@ -118,7 +118,7 @@ const Index = () => {
           <div className="flex items-center justify-center gap-2 mb-6">
             <Heart className="h-8 w-8 text-rose-gold animate-pulse" />
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Wedding AI Video
+              Hare Movie
             </h1>
             <Heart className="h-8 w-8 text-rose-gold animate-pulse" />
           </div>
