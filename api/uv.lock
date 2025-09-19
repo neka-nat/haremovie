@@ -674,6 +674,22 @@ wheels = [
 ]
 
 [[package]]
+name = "google-cloud-tasks"
+version = "2.19.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core", extra = ["grpc"] },
+    { name = "google-auth" },
+    { name = "grpc-google-iam-v1" },
+    { name = "proto-plus" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7c/73/47e178f576c1e2db9cdb389930ca26f1cf1313ca4d29cc3331ed09e3190d/google_cloud_tasks-2.19.3.tar.gz", hash = "sha256:e9da534f3793e0de37f9a3b34ac3647420865ca726c0ac72148c4f721c4894d6", size = 343833, upload-time = "2025-06-12T01:15:39.927Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bf/8e/fe11607117508c24b56e04c77d0ea21b49ab469e180ff2b25f533dd9a85b/google_cloud_tasks-2.19.3-py3-none-any.whl", hash = "sha256:29bcf8cfa455db0bf5cb3e812e518de6a4e8ff748265898a3a15cfaf35927c7e", size = 289699, upload-time = "2025-06-12T01:15:38.388Z" },
+]
+
+[[package]]
 name = "google-cloud-trace"
 version = "1.16.2"
 source = { registry = "https://pypi.org/simple" }
@@ -862,6 +878,7 @@ dependencies = [
     { name = "alembic" },
     { name = "fastapi", extra = ["all"] },
     { name = "google-cloud-aiplatform", extra = ["adk", "agent-engines"] },
+    { name = "google-cloud-tasks" },
     { name = "loguru" },
     { name = "psycopg2" },
     { name = "sqlmodel" },
@@ -872,6 +889,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.16.5" },
     { name = "fastapi", extras = ["all"], specifier = ">=0.116.1" },
     { name = "google-cloud-aiplatform", extras = ["adk", "agent-engines"], specifier = ">=1.114.0" },
+    { name = "google-cloud-tasks", specifier = ">=2.19.3" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "psycopg2", specifier = ">=2.9.10" },
     { name = "sqlmodel", specifier = ">=0.0.25" },

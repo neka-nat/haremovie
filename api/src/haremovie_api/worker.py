@@ -1,5 +1,5 @@
 import os
-from uuid import uuid4
+from uuid import UUID
 
 from loguru import logger
 from fastapi import FastAPI, Depends
@@ -37,8 +37,9 @@ async def health():
     return {"message": "OK"}
 
 
-@app.post("/tasks/run")
+@app.post("/tasks/run/{task_id}")
 async def run_task(
+    task_id: UUID,
     request: RunTaskRequest,
     adk_app: AgentEngine = Depends(get_ai_agent),
     storage_client: storage.Client = Depends(get_storage_client),
@@ -78,7 +79,7 @@ async def run_task(
     task = None
     try:
         video_url = None
-        task = upsert_task(db, Task(id=uuid4(), status=TaskStatus.PROCESSING))
+        task = upsert_task(db, Task(id=task_id, status=TaskStatus.PROCESSING))
         for event in adk_app.stream_query(
             user_id="test_user_001",
             session_id=session["id"],
