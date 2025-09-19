@@ -3,8 +3,9 @@ from uuid import uuid4
 
 import grpc
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import storage, tasks_v2
-from google.cloud.tasks_v2 import CloudTasksGrpcTransport
+from google.cloud.tasks_v2.services.cloud_tasks.transports import CloudTasksGrpcTransport
 from google.protobuf import duration_pb2
 from loguru import logger
 from sqlmodel import Session, select
@@ -17,6 +18,20 @@ from haremovie_api.storage import get_storage_client, upload_artifact
 
 app = FastAPI()
 
+origins_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
+origins = [o.strip() for o in origins_env.split(",") if o.strip()]
+if not origins:
+    origins = [
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+    ]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def read_root():

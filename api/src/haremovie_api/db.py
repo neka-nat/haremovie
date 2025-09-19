@@ -33,14 +33,22 @@ def get_session():
 
 
 def upsert_task(db: Session, task: Task) -> Task:
-    task = db.exec(select(Task).where(Task.id == task.id)).first()
-    if task:
-        db.add(task)
+    existing = db.exec(select(Task).where(Task.id == task.id)).first()
+    if existing:
+        # 更新フィールドを反映（progress は渡されない場合もあるため存在チェック）
+        existing.status = task.status
+        if hasattr(task, "progress"):
+            existing.progress = task.progress
+        existing.updated_at = task.updated_at
+        db.add(existing)
+        db.commit()
+        db.refresh(existing)
+        return existing
     else:
         db.add(task)
-    db.commit()
-    db.refresh(task)
-    return task
+        db.commit()
+        db.refresh(task)
+        return task
 
 
 def save_task_result(db: Session, task_result: TaskResult) -> TaskResult:

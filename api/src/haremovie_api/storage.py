@@ -1,3 +1,4 @@
+import base64
 import os
 from uuid import uuid4
 
@@ -18,11 +19,18 @@ def download_artifact(
 
 
 def upload_artifact(
-    storage_client: storage.Client, name: str, data: bytes, mime_type: str
+    storage_client: storage.Client, name: str, data: bytes | str, mime_type: str
 ) -> str:
     bucket_name = os.getenv("GOOGLE_STORAGE_BUCKET_NAME")
     blob_name = f"inputs/{name}_{uuid4()}.{mime_type.split('/')[1]}"
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(blob_name)
-    blob.upload_from_string(data)
+    if isinstance(data, bytes):
+        raw = data
+    else:
+        s = data if isinstance(data, str) else str(data)
+        if s.startswith("data:"):
+            s = s.split(",", 1)[1]
+        raw = base64.b64decode(s)
+    blob.upload_from_string(raw, content_type=mime_type)
     return f"gs://{bucket_name}/{blob_name}"

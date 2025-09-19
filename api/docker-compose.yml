@@ -1,5 +1,13 @@
 version: "3"
 services:
+  gcs:
+    image: fsouza/fake-gcs-server
+    ports:
+      - 4443:4443
+    volumes:
+      - ./haremovie-storage:/data/${GOOGLE_STORAGE_BUCKET_NAME}
+    command:
+      ["-scheme", "http", "-port", "4443", "-external-url", "http://gcs:4443"]
   gcloud-tasks-emulator:
     image: ghcr.io/aertje/cloud-tasks-emulator:latest
     command: -host 0.0.0.0 -port 8123 -queue "projects/${GOOGLE_CLOUD_PROJECT}/locations/${GOOGLE_CLOUD_LOCATION}/queues/haremovie-agent-queue"
@@ -34,9 +42,15 @@ services:
     environment:
       - STORAGE_EMULATOR_HOST=http://gcs:4443
       - HAREMOVIE_WORKER_URL=http://worker:8001
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=postgres
     env_file:
       - .env
     depends_on:
+      - gcs
       - gcloud-tasks-emulator
       - db
   worker:
@@ -48,9 +62,15 @@ services:
       - .:/app
     environment:
       - STORAGE_EMULATOR_HOST=http://gcs:4443
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=postgres
     env_file:
       - .env
     depends_on:
+      - gcs
       - db
       - gcloud-tasks-emulator
 volumes:

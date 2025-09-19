@@ -24,6 +24,8 @@ class Task(SQLModel, table=True, table_name="tasks"):
     created_at: datetime = Field(default_factory=get_jst_now)
     updated_at: datetime = Field(default_factory=get_jst_now)
 
+    task_results: list["TaskResult"] = Relationship(back_populates="task")
+
 
 class TaskResult(SQLModel, table=True, table_name="task_results"):
     id: UUID = Field(default_factory=uuid4, primary_key=True)

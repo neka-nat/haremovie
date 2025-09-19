@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,12 +9,20 @@ import { VideoPreview } from '@/components/VideoPreview';
 import { toast } from 'sonner';
 import { Heart, Sparkles, Film, Users } from 'lucide-react';
 
-// Sample images imports
 import heroImage from '@/assets/hero-wedding.jpg';
 import sampleDress1 from '@/assets/sample-dress-1.jpg';
 import sampleTuxedo1 from '@/assets/sample-tuxedo-1.jpg';
 import sampleBackgroundBeach from '@/assets/sample-background-beach.jpg';
 import sampleBackgroundChurch from '@/assets/sample-background-church.jpg';
+
+import {
+  createTask,
+  fileOrUrlToBase64,
+  getTask,
+  getTaskResult,
+  type ServerTaskStatus,
+  type CreateTaskRequest,
+} from '@/lib/api';
 
 interface UploadedImages {
   bride?: File | null;
@@ -24,11 +32,22 @@ interface UploadedImages {
   background?: File | string | null;
 }
 
+const statusMap: Record<ServerTaskStatus, TaskStatus> = {
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  COMPLETED: 'completed',
+  FAILED: 'error',
+};
+
 const Index = () => {
   const [images, setImages] = useState<UploadedImages>({});
   const [taskStatus, setTaskStatus] = useState<TaskStatus>('pending');
   const [progress, setProgress] = useState(0);
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | undefined>();
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+
+  // ポーリング解除用
+  const pollingAbortRef = useRef<{ aborted: boolean }>({ aborted: false });
 
   // Sample data
   const sampleDresses = [
@@ -45,55 +64,143 @@ const Index = () => {
   ];
 
   const handleImageUpload = (type: keyof UploadedImages) => (file: File) => {
-    setImages(prev => ({ ...prev, [type]: file }));
+    setImages((prev) => ({ ...prev, [type]: file }));
     toast.success(`${getImageTypeLabel(type)}がアップロードされました`);
   };
 
   const handleImageRemove = (type: keyof UploadedImages) => () => {
-    setImages(prev => ({ ...prev, [type]: null }));
+    setImages((prev) => ({ ...prev, [type]: null }));
   };
 
   const handleSampleSelect = (type: keyof UploadedImages) => (item: any) => {
-    setImages(prev => ({ ...prev, [type]: item.src }));
+    setImages((prev) => ({ ...prev, [type]: item.src }));
     toast.success(`${item.title}を選択しました`);
   };
 
   const getImageTypeLabel = (type: keyof UploadedImages): string => {
     switch (type) {
-      case 'bride': return '花嫁の写真';
-      case 'groom': return '花婿の写真';
-      case 'dress': return 'ウェディングドレス';
-      case 'tuxedo': return 'タキシード';
-      case 'background': return '背景';
-      default: return '';
+      case 'bride':
+        return '花嫁の写真';
+      case 'groom':
+        return '花婿の写真';
+      case 'dress':
+        return 'ウェディングドレス';
+      case 'tuxedo':
+        return 'タキシード';
+      case 'background':
+        return '背景';
+      default:
+        return '';
     }
   };
 
-  const canGenerate = images.bride && images.groom && images.dress && images.tuxedo && images.background;
+  // ---- 片方のみ必須に変更（将来両対応予定） ----
+  const selectedRole: 'bride' | 'groom' | null = images.bride
+    ? 'bride'
+    : images.groom
+    ? 'groom'
+    : null;
+
+  const canGenerate =
+    !!selectedRole &&
+    !!images.background &&
+    ((selectedRole === 'bride' && !!images.dress) ||
+      (selectedRole === 'groom' && !!images.tuxedo));
+
+  // 進捗をなめらかに（サーバの progress が無い場合のフォールバック）
+  const tickProgress = (serverProgress?: number) => {
+    if (typeof serverProgress === 'number' && serverProgress >= 0 && serverProgress <= 100) {
+      setProgress(serverProgress);
+      return;
+    }
+    setProgress((p) => Math.min(99, p + 2 + Math.random() * 3));
+  };
+
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const handleGenerateVideo = async () => {
     if (!canGenerate) {
-      toast.error('すべての画像を選択してください');
+      toast.error('花嫁/花婿のどちらかの写真、対応する衣装、背景を選択してください');
       return;
     }
 
-    setTaskStatus('processing');
-    setProgress(0);
+    try {
+      setTaskStatus('processing');
+      setProgress(3);
+      setGeneratedVideoUrl(undefined);
+      setActiveTaskId(null);
+      pollingAbortRef.current.aborted = false;
 
-    // Simulate video generation process
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTaskStatus('completed');
-          // Simulate generated video URL
-          setGeneratedVideoUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4');
-          toast.success('動画が生成されました！');
-          return 100;
+      // 送る対象を決定（現状は片方のみ）
+      const character = selectedRole === 'bride' ? images.bride : images.groom;
+      const clothes = selectedRole === 'bride' ? images.dress : images.tuxedo;
+      const background = images.background;
+
+      if (!character || !clothes || !background) {
+        toast.error('入力が不足しています');
+        setTaskStatus('error');
+        return;
+      }
+
+      // File or URL → Base64
+      const [ch, cl, bg] = await Promise.all([
+        fileOrUrlToBase64(character as File | string),
+        fileOrUrlToBase64(clothes as File | string),
+        fileOrUrlToBase64(background as File | string),
+      ]);
+
+      const payload: CreateTaskRequest = {
+        character_image: { base64_data: ch.base64, mime_type: ch.mime },
+        // API 側の名前が dress_image なので、花婿でもここに衣装を入れる
+        dress_image: { base64_data: cl.base64, mime_type: cl.mime },
+        background_image: { base64_data: bg.base64, mime_type: bg.mime },
+      };
+
+      // タスク作成
+      const { task_id } = await createTask(payload);
+      setActiveTaskId(task_id);
+      toast.success('生成タスクを作成しました');
+
+      // ポーリング
+      const started = Date.now();
+      const timeoutMs = 15 * 60 * 1000; // 15分
+      setProgress(7);
+
+      while (!pollingAbortRef.current.aborted && Date.now() - started < timeoutMs) {
+        try {
+          const t = await getTask(task_id);
+          setTaskStatus(statusMap[t.status]);
+          tickProgress(t.progress);
+
+          if (t.status === 'COMPLETED') {
+            const result = await getTaskResult(task_id);
+            setGeneratedVideoUrl(result.result_video_url);
+            setProgress(100);
+            setTaskStatus('completed');
+            toast.success('動画が生成されました！');
+            return;
+          }
+          if (t.status === 'FAILED') {
+            setTaskStatus('error');
+            toast.error('動画生成に失敗しました');
+            return;
+          }
+        } catch (e: any) {
+          // まだ Task が見つからない(404)等は少し待って再試行
+          // それ以外のエラーも一定時間はリトライ
+          // console.warn(e);
         }
-        return prev + Math.random() * 15;
-      });
-    }, 500);
+        await sleep(2500);
+      }
+
+      if (!pollingAbortRef.current.aborted) {
+        setTaskStatus('error');
+        toast.error('タイムアウトしました（しばらくしてから再試行してください）');
+      }
+    } catch (e: any) {
+      setTaskStatus('error');
+      toast.error(`エラーが発生しました: ${e?.message || e}`);
+    }
   };
 
   const handleDownload = () => {
@@ -110,7 +217,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-background">
       {/* Hero Section */}
       <section className="relative py-20 px-4 text-center">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
           style={{ backgroundImage: `url(${heroImage})` }}
         />
@@ -128,7 +235,8 @@ const Index = () => {
           <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              <span>人物写真 2枚</span>
+              {/* 片方でもOK */}
+              <span>人物写真 1〜2枚</span>
             </div>
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
@@ -150,7 +258,7 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-primary" />
-                  人物写真のアップロード
+                  人物写真のアップロード（現在は片方のみ対応）
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -232,9 +340,11 @@ const Index = () => {
                       items={sampleBackgrounds}
                       onSelect={handleSampleSelect('background')}
                       selectedId={
-                        images.background === sampleBackgroundBeach ? 'beach' :
-                        images.background === sampleBackgroundChurch ? 'church' :
-                        undefined
+                        images.background === sampleBackgroundBeach
+                          ? 'beach'
+                          : images.background === sampleBackgroundChurch
+                          ? 'church'
+                          : undefined
                       }
                       title="サンプル背景"
                     />
@@ -269,15 +379,21 @@ const Index = () => {
                   ) : (
                     <>
                       <Film className="h-4 w-4 mr-2" />
-                      動画を生成する
+                      {selectedRole === 'groom'
+                        ? '（花婿）動画を生成する'
+                        : selectedRole === 'bride'
+                        ? '（花嫁）動画を生成する'
+                        : '動画を生成する'}
                     </>
                   )}
                 </Button>
 
-                <ProgressIndicator
-                  status={taskStatus}
-                  progress={progress}
-                />
+                <ProgressIndicator status={taskStatus} progress={progress} />
+                {activeTaskId && (
+                  <p className="text-xs text-muted-foreground text-center break-all">
+                    タスクID: {activeTaskId}
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -286,10 +402,7 @@ const Index = () => {
                 <CardTitle>動画プレビュー</CardTitle>
               </CardHeader>
               <CardContent>
-                <VideoPreview
-                  videoUrl={generatedVideoUrl}
-                  onDownload={handleDownload}
-                />
+                <VideoPreview videoUrl={generatedVideoUrl} onDownload={handleDownload} />
               </CardContent>
             </Card>
           </div>

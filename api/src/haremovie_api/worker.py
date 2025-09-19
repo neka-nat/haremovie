@@ -1,5 +1,5 @@
 import os
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import Depends, FastAPI
 from google.cloud import storage
@@ -96,7 +96,7 @@ async def run_task(
         if video_url:
             upsert_task(db, Task(id=task.id, status=TaskStatus.COMPLETED))
             save_task_result(
-                db, TaskResult(id=uuid4(), task_id=task.id, video_url=video_url)
+                db, TaskResult(id=uuid4(), task_id=task.id, result_video_url=video_url)
             )
             return {"session_id": session["id"]}
         else:

@@ -4,6 +4,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+from haremovie_api.models import Task, TaskResult
 from sqlmodel import SQLModel
 
 # this is the Alembic Config object, which provides
