@@ -1,6 +1,6 @@
 ```bash
 gcloud auth login
-gcloud config set project haremovie
+gcloud config set project $PROJECT_ID
 gcloud auth application-default login
 ```
 

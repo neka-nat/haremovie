@@ -4,6 +4,8 @@ resource "google_project_service" "required_apis" {
     "storage.googleapis.com",
     "cloudtasks.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "sqladmin.googleapis.com",
+    "secretmanager.googleapis.com",
   ])
 
   service            = each.key

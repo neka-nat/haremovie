@@ -17,3 +17,15 @@ variable "bucket_name" {
 variable "queue_name" {
   type = string
 }
+
+variable "secrets_file" {
+  type = string
+}
+
+variable "cloud_sql_instance_name" {
+  type = string
+}
+
+variable "db_name" {
+  type = string
+}
