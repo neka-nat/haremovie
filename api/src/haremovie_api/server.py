@@ -128,12 +128,11 @@ async def get_task(task_id: str, db: Session = Depends(get_session)) -> Task:
 @app.post("/tasks/{task_id}/result")
 async def get_task_result(
     task_id: str, db: Session = Depends(get_session),
-    storage_client: storage.Client = Depends(get_storage_client),
 ) -> TaskResult:
     task_result = db.exec(
         select(TaskResult).where(TaskResult.task_id == task_id)
     ).first()
-    task_result.video_url = get_signed_url(storage_client, task_result.video_url)
+    task_result.result_video_url = get_signed_url(task_result.result_video_url)
     if not task_result:
         raise HTTPException(status_code=404, detail="Task result not found")
     return task_result

@@ -10,10 +10,11 @@ import { toast } from 'sonner';
 import { Heart, Sparkles, Film, Users } from 'lucide-react';
 
 import heroImage from '@/assets/hero-wedding.jpg';
-import sampleDress1 from '@/assets/sample-dress-1.jpg';
+import sampleDress1 from '@/assets/sample-dress-1.png';
 import sampleTuxedo1 from '@/assets/sample-tuxedo-1.jpg';
 import sampleBackgroundBeach from '@/assets/sample-background-beach.jpg';
-import sampleBackgroundChurch from '@/assets/sample-background-church.jpg';
+import sampleBackgroundChurch1 from '@/assets/sample-background-church-1.png';
+import sampleBackgroundChurch2 from '@/assets/sample-background-church-2.png';
 
 import {
   createTask,
@@ -60,7 +61,8 @@ const Index = () => {
 
   const sampleBackgrounds = [
     { id: 'beach', src: sampleBackgroundBeach, alt: 'ビーチウェディング', title: 'ビーチ会場' },
-    { id: 'church', src: sampleBackgroundChurch, alt: 'チャペルウェディング', title: 'チャペル会場' },
+    { id: 'church1', src: sampleBackgroundChurch1, alt: 'チャペルウェディング1', title: 'チャペル会場' },
+    { id: 'church2', src: sampleBackgroundChurch2, alt: 'チャペルウェディング2', title: 'チャペル会場' },
   ];
 
   const handleImageUpload = (type: keyof UploadedImages) => (file: File) => {
@@ -113,7 +115,7 @@ const Index = () => {
       setProgress(serverProgress);
       return;
     }
-    setProgress((p) => Math.min(99, p + 2 + Math.random() * 3));
+    setProgress((p) => Math.min(99, p));
   };
 
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -230,7 +232,7 @@ const Index = () => {
             <Heart className="h-8 w-8 text-rose-gold animate-pulse" />
           </div>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            AIの力で、あなたの特別な日を美しい動画に。写真をアップロードするだけで、プロ品質の結婚式動画を生成します。
+            AIの力で、あなたの理想の結婚式を動画に。<br/>写真をアップロードすることで、結婚式動画を生成します。
           </p>
           <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
@@ -342,8 +344,10 @@ const Index = () => {
                       selectedId={
                         images.background === sampleBackgroundBeach
                           ? 'beach'
-                          : images.background === sampleBackgroundChurch
-                          ? 'church'
+                          : images.background === sampleBackgroundChurch1
+                          ? 'church1'
+                          : images.background === sampleBackgroundChurch2
+                          ? 'church2'
                           : undefined
                       }
                       title="サンプル背景"

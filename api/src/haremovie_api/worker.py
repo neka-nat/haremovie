@@ -80,6 +80,8 @@ async def run_task(
     try:
         video_url = None
         task = upsert_task(db, Task(id=task_id, status=TaskStatus.PROCESSING))
+        current_step = 0
+        total_steps = 8
         for event in adk_app.stream_query(
             user_id="test_user_001",
             session_id=session["id"],
@@ -93,6 +95,15 @@ async def run_task(
                     and part["function_response"].get("name") == "generate_video"
                 ):
                     video_url = part["function_response"]["response"].get("video_url")
+                current_step += 1
+                upsert_task(
+                    db,
+                    Task(
+                        id=task.id,
+                        status=TaskStatus.PROCESSING,
+                        progress=min(100, int(current_step / total_steps * 100)),
+                    ),
+                )
         if video_url:
             upsert_task(db, Task(id=task.id, status=TaskStatus.COMPLETED))
             save_task_result(

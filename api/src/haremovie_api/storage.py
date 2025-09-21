@@ -5,6 +5,8 @@ from datetime import timedelta
 from uuid import uuid4
 
 from google.cloud import storage
+from google.oauth2 import service_account
+from google.api_core.client_options import ClientOptions
 
 
 def get_storage_client() -> storage.Client:
@@ -39,11 +41,22 @@ def upload_artifact(
 
 
 def get_signed_url(
-    storage_client: storage.Client,
     video_gcs_uri: str,
     download: bool = False,  # Trueならダウンロードさせる
     expire_minutes: int = 60,
 ) -> str:
+    key_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    credentials = None
+    if key_path:
+        credentials = service_account.Credentials.from_service_account_file(
+            key_path,
+            scopes=["https://www.googleapis.com/auth/cloud-platform"],
+        )
+    # vertex aiの結果は必ずクラウドのストレージを使う
+    storage_client = storage.Client(
+        credentials=credentials,
+        client_options=ClientOptions(api_endpoint="https://storage.googleapis.com")
+    )
     bucket_name, blob_name = video_gcs_uri.replace("gs://", "").split("/", 1)
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(blob_name)
