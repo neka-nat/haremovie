@@ -1,4 +1,4 @@
-# HareMovie
+# HARE Movie
 
 AIで結婚式動画を生成するアプリケーションです。
 
