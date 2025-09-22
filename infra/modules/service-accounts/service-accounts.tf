@@ -22,12 +22,14 @@ locals {
     "roles/secretmanager.secretAccessor",
     "roles/storage.objectUser",
     "roles/cloudtasks.enqueuer",
+    "roles/cloudsql.editor",
     "roles/artifactregistry.reader",
   ]
   roles_worker = [
     "roles/datastore.user",
     "roles/secretmanager.secretAccessor",
     "roles/storage.objectUser",
+    "roles/cloudsql.editor",
     "roles/artifactregistry.reader",
     "roles/aiplatform.user",
   ]

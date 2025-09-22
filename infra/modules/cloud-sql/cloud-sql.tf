@@ -77,3 +77,7 @@ resource "google_sql_user" "postgres" {
 output "cloud_sql_instance_name" {
   value = google_sql_database_instance.postgres.name
 }
+
+output "instance_connection_name" {
+  value = google_sql_database_instance.postgres.connection_name
+}

@@ -1,5 +1,6 @@
 import os
 
+from google.cloud.sql.connector import connector
 from sqlmodel import Session, create_engine, select
 
 from haremovie_api.models import Task, TaskResult
@@ -14,13 +15,32 @@ def get_db_uri() -> str:
     return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
 
 
+def getconn():
+    conn = connector.connect(
+        os.getenv("INSTANCE_CONNECTION_NAME"),
+        "pg8000",
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        db=os.getenv("DB_NAME"),
+    )
+    return conn
+
+
 _engine = None
 
 
 def get_engine(url: str | None = None):
     global _engine
     if _engine is None:
-        _engine = create_engine(url or get_db_uri())
+        if os.getenv("INSTANCE_CONNECTION_NAME"):
+            _engine = create_engine(
+                "postgresql+pg8000://",
+                creator=getconn,
+                pool_pre_ping=True,
+                pool_recycle=1800,
+            )
+        else:
+            _engine = create_engine(url or get_db_uri())
     return _engine
 
 

@@ -33,3 +33,11 @@ variable "db_name" {
 variable "repository_id" {
   type = string
 }
+
+variable "cors_allowed_origins" {
+  type = string
+}
+
+variable "google_agent_engine_resource_name" {
+  type = string
+}

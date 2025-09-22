@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "alembic>=1.16.5",
+    "cloud-sql-python-connector[pg8000]>=1.18.4",
     "fastapi[all]>=0.116.1",
     "google-cloud-aiplatform[adk,agent-engines]>=1.114.0",
     "google-cloud-tasks>=2.19.3",

@@ -30,3 +30,13 @@ resource "google_secret_manager_secret_version" "this" {
 output "google_secret_manager_secret_version" {
   value = google_secret_manager_secret_version.this
 }
+
+output "secrets" {
+  value = {
+    for k, v in google_secret_manager_secret.this :
+    k => {
+      name    = v.name
+      version = google_secret_manager_secret_version.this[k].name
+    }
+  }
+}

@@ -6,6 +6,7 @@ resource "google_project_service" "required_apis" {
     "cloudbuild.googleapis.com",
     "cloudtasks.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "run.googleapis.com",
     "sqladmin.googleapis.com",
     "secretmanager.googleapis.com",
   ])
