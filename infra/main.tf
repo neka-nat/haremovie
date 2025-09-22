@@ -35,3 +35,17 @@ module "cloud_sql" {
   required_apis = module.required_api.required_apis
   google_secret_manager_secret_version = module.secrets_manager.google_secret_manager_secret_version
 }
+
+module "artifact_registry" {
+  source = "./modules/artifact-registry"
+  gcp_project_id = var.gcp_project_id
+  primary_region = var.primary_region
+  repository_id = var.repository_id
+  required_apis = module.required_api.required_apis
+}
+
+module "service_accounts" {
+  source = "./modules/service-accounts"
+  gcp_project_id = var.gcp_project_id
+  required_apis = module.required_api.required_apis
+}

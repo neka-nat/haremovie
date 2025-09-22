@@ -1,0 +1,6 @@
+.env
+.git/
+
+.venv/
+creds/
+.ruff_cache/
