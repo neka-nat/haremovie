@@ -65,6 +65,8 @@ module "cloud_run_app" {
     GOOGLE_CLOUD_LOCATION      = var.primary_region
     HAREMOVIE_WORKER_URL           = module.cloud_run_worker.url
     CORS_ALLOWED_ORIGINS       = var.cors_allowed_origins
+    DB_USER                    = module.cloud_sql.db_user
+    DB_NAME                    = var.db_name
     INSTANCE_CONNECTION_NAME   = module.cloud_sql.instance_connection_name
   }
   secret_env = {
@@ -88,6 +90,8 @@ module "cloud_run_worker" {
     GOOGLE_CLOUD_PROJECT              = var.gcp_project_id
     GOOGLE_CLOUD_LOCATION             = var.primary_region
     GOOGLE_AGENT_ENGINE_RESOURCE_NAME = var.google_agent_engine_resource_name
+    DB_USER                           = module.cloud_sql.db_user
+    DB_NAME                           = var.db_name
     INSTANCE_CONNECTION_NAME          = module.cloud_sql.instance_connection_name
   }
   secret_env = {

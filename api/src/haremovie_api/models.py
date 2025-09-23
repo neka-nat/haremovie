@@ -17,7 +17,7 @@ class TaskStatus(Enum):
     FAILED = "FAILED"
 
 
-class Task(SQLModel, table=True, table_name="tasks"):
+class Task(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     status: TaskStatus
     progress: int = Field(default=0)
@@ -27,7 +27,7 @@ class Task(SQLModel, table=True, table_name="tasks"):
     task_results: list["TaskResult"] = Relationship(back_populates="task")
 
 
-class TaskResult(SQLModel, table=True, table_name="task_results"):
+class TaskResult(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     task_id: UUID = Field(foreign_key="task.id")
     result_video_url: str

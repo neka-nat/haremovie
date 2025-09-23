@@ -4,6 +4,8 @@ import mimetypes
 from datetime import timedelta
 from uuid import uuid4
 
+import google.auth
+import google.auth.transport.requests
 from google.cloud import storage
 from google.oauth2 import service_account
 from google.api_core.client_options import ClientOptions
@@ -52,6 +54,10 @@ def get_signed_url(
             key_path,
             scopes=["https://www.googleapis.com/auth/cloud-platform"],
         )
+    else:
+       credentials, _ = google.auth.default()
+       credentials.refresh(google.auth.transport.requests.Request())
+
     # vertex aiの結果は必ずクラウドのストレージを使う
     storage_client = storage.Client(
         credentials=credentials,
@@ -66,11 +72,22 @@ def get_signed_url(
     # Content-Disposition を付けたい場合
     disp = f'attachment; filename="{filename}"' if download else f'inline; filename="{filename}"'
 
-    url = blob.generate_signed_url(
-        version="v4",
-        expiration=timedelta(minutes=expire_minutes),
-        method="GET",
-        response_disposition=disp,
-        response_type=content_type,
-    )
+    if key_path:
+        url = blob.generate_signed_url(
+            version="v4",
+            expiration=timedelta(minutes=expire_minutes),
+            method="GET",
+            response_disposition=disp,
+            response_type=content_type,
+        )
+    else:
+        url = blob.generate_signed_url(
+            version="v4",
+            expiration=timedelta(minutes=expire_minutes),
+            method="GET",
+            response_disposition=disp,
+            response_type=content_type,
+            service_account_email=credentials.service_account_email,
+            access_token=credentials.token,
+        )
     return url

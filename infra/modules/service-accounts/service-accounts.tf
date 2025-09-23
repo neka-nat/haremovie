@@ -24,6 +24,7 @@ locals {
     "roles/cloudtasks.enqueuer",
     "roles/cloudsql.editor",
     "roles/artifactregistry.reader",
+    "roles/iam.serviceAccountTokenCreator",
   ]
   roles_worker = [
     "roles/datastore.user",

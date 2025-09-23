@@ -1,9 +1,18 @@
 import os
 
-from google.cloud.sql.connector import connector
 from sqlmodel import Session, create_engine, select
 
 from haremovie_api.models import Task, TaskResult
+
+
+connector = None
+if os.getenv("INSTANCE_CONNECTION_NAME"):
+    try:
+        from google.cloud.sql.connector import Connector
+        connector = Connector()
+    except Exception as e:
+        print(e)
+        connector = None
 
 
 def get_db_uri() -> str:

@@ -4,3 +4,5 @@
 .venv/
 creds/
 .ruff_cache/
+
+cloud-sql-proxy
