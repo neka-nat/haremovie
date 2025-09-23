@@ -17,6 +17,7 @@ graph_attr = {
 }
 
 vertex_ai_icon_path = os.path.join(os.path.dirname(__file__), "icons/vertexai.png")
+gemini_icon_path = os.path.join(os.path.dirname(__file__), "icons/gemini.png")
 
 with Diagram(
     "HARE Movie - System Architecture",
@@ -51,8 +52,8 @@ with Diagram(
             agent_engine = Custom("Agent Engine", vertex_ai_icon_path)
             with Cluster("Agent & Tools"):
                 agent = Custom("LlmAgent", vertex_ai_icon_path)
-                vto = Custom("virtual_try_on\n(nanobanana)", vertex_ai_icon_path)
-                synth = Custom("image_synthesis\n(nanobanana)", vertex_ai_icon_path)
+                vto = Custom("virtual_try_on\n(nanobanana)", gemini_icon_path)
+                synth = Custom("image_synthesis\n(nanobanana)", gemini_icon_path)
                 veo = Custom("veo-3.0", vertex_ai_icon_path)
 
     # --- フロー（Web → API） ---
