@@ -27,6 +27,17 @@ resource "google_artifact_registry_repository" "haremovie_container_registry" {
   ]
 }
 
+resource "google_artifact_registry_repository" "haremovie_container_registry_frontend" {
+  project       = var.gcp_project_id
+  location      = var.primary_region
+  repository_id = "${var.repository_id}-frontend"
+  description   = "Haremovie Container Registry"
+  format        = "DOCKER"
+  depends_on = [
+    var.required_apis
+  ]
+}
+
 resource "null_resource" "submit" {
   provisioner "local-exec" {
     command = "gcloud builds submit --tag ${local.image_uri} --project ${var.gcp_project_id} ${path.module}/../../../api"

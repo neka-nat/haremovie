@@ -1,0 +1,20 @@
+substitutions:
+  _API_ORIGIN: "https://api.haremovie.com"
+  _AR_LOCATION: "asia-northeast1"
+  _AR_REPO: "haremovie-container-registry-frontend"
+  _IMAGE_NAME: "haremovie-frontend"
+
+steps:
+- name: gcr.io/cloud-builders/docker
+  args:
+    [
+      "build",
+      "-t",
+      "${_AR_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:latest",
+      "--build-arg",
+      "VITE_API_BASE_URL=${_API_ORIGIN}",
+      "."
+    ]
+
+images:
+- "${_AR_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:latest"

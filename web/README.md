@@ -71,3 +71,15 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Deploy
+
+```bash
+gcloud builds submit \
+  --config=cloudbuild.yaml \
+  --substitutions=_API_ORIGIN=<API_URL>
+
+gcloud run deploy haremovie-frontend \
+  --image asia-northeast1-docker.pkg.dev/$PROJECT_ID/haremovie-container-registry-frontend/haremovie-frontend:latest \
+  --region asia-northeast1
+```
