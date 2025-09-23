@@ -7,8 +7,10 @@ class ImageUrl(BaseModel):
 
 
 class RunTaskRequest(BaseModel):
-    character_image: ImageUrl
+    bride_image: ImageUrl
+    groom_image: ImageUrl
     dress_image: ImageUrl
+    tuxedo_image: ImageUrl
     background_image: ImageUrl
 
 
@@ -18,6 +20,8 @@ class ImageData(BaseModel):
 
 
 class CreateTaskRequest(BaseModel):
-    character_image: ImageData
+    bride_image: ImageData
+    groom_image: ImageData
     dress_image: ImageData
+    tuxedo_image: ImageData
     background_image: ImageData

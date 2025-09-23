@@ -46,17 +46,29 @@ async def health():
 def _upload_input_artifacts(
     storage_client: storage.Client, request: CreateTaskRequest
 ) -> RunTaskRequest:
-    character_image_url = upload_artifact(
+    bride_image_url = upload_artifact(
         storage_client,
-        "character_image",
-        request.character_image.base64_data,
-        request.character_image.mime_type,
+        "bride_image",
+        request.bride_image.base64_data,
+        request.bride_image.mime_type,
+    )
+    groom_image_url = upload_artifact(
+        storage_client,
+        "groom_image",
+        request.groom_image.base64_data,
+        request.groom_image.mime_type,
     )
     dress_image_url = upload_artifact(
         storage_client,
         "dress_image",
         request.dress_image.base64_data,
         request.dress_image.mime_type,
+    )
+    tuxedo_image_url = upload_artifact(
+        storage_client,
+        "tuxedo_image",
+        request.tuxedo_image.base64_data,
+        request.tuxedo_image.mime_type,
     )
     background_image_url = upload_artifact(
         storage_client,
@@ -65,13 +77,21 @@ def _upload_input_artifacts(
         request.background_image.mime_type,
     )
     request_for_worker = RunTaskRequest(
-        character_image=ImageUrl(
-            url=character_image_url,
-            mime_type=request.character_image.mime_type,
+        bride_image=ImageUrl(
+            url=bride_image_url,
+            mime_type=request.bride_image.mime_type,
+        ),
+        groom_image=ImageUrl(
+            url=groom_image_url,
+            mime_type=request.groom_image.mime_type,
         ),
         dress_image=ImageUrl(
             url=dress_image_url,
             mime_type=request.dress_image.mime_type,
+        ),
+        tuxedo_image=ImageUrl(
+            url=tuxedo_image_url,
+            mime_type=request.tuxedo_image.mime_type,
         ),
         background_image=ImageUrl(
             url=background_image_url,

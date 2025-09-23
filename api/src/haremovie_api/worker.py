@@ -47,11 +47,17 @@ async def run_task(
 ):
     try:
         session = adk_app.create_session(user_id="test_user_001")
-        character_image_data, character_image_mime_type = download_artifact(
-            storage_client, request.character_image.url
+        bride_image_data, bride_image_mime_type = download_artifact(
+            storage_client, request.bride_image.url
+        )
+        groom_image_data, groom_image_mime_type = download_artifact(
+            storage_client, request.groom_image.url
         )
         dress_image_data, dress_image_mime_type = download_artifact(
             storage_client, request.dress_image.url
+        )
+        tuxedo_image_data, tuxedo_image_mime_type = download_artifact(
+            storage_client, request.tuxedo_image.url
         )
         background_image_data, background_image_mime_type = download_artifact(
             storage_client, request.background_image.url
@@ -64,12 +70,20 @@ async def run_task(
             text="与えられた画像をもとに、結婚式の動画を作成してください。"
         ).model_dump(mode="json", by_alias=True),
         types.Part.from_bytes(
-            data=character_image_data,
-            mime_type=character_image_mime_type,
+            data=bride_image_data,
+            mime_type=bride_image_mime_type,
+        ).model_dump(mode="json", by_alias=True),
+        types.Part.from_bytes(
+            data=groom_image_data,
+            mime_type=groom_image_mime_type,
         ).model_dump(mode="json", by_alias=True),
         types.Part.from_bytes(
             data=dress_image_data,
             mime_type=dress_image_mime_type,
+        ).model_dump(mode="json", by_alias=True),
+        types.Part.from_bytes(
+            data=tuxedo_image_data,
+            mime_type=tuxedo_image_mime_type,
         ).model_dump(mode="json", by_alias=True),
         types.Part.from_bytes(
             data=background_image_data,
@@ -81,7 +95,7 @@ async def run_task(
         video_url = None
         task = upsert_task(db, Task(id=task_id, status=TaskStatus.PROCESSING))
         current_step = 0
-        total_steps = 8
+        total_steps = 10
         for event in adk_app.stream_query(
             user_id="test_user_001",
             session_id=session["id"],

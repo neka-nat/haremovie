@@ -11,7 +11,7 @@ import { Heart, Sparkles, Film, Users } from 'lucide-react';
 
 import heroImage from '@/assets/hero-wedding.jpg';
 import sampleDress1 from '@/assets/sample-dress-1.png';
-import sampleTuxedo1 from '@/assets/sample-tuxedo-1.jpg';
+import sampleTuxedo1 from '@/assets/sample-tuxedo-1.png';
 import sampleBackgroundBeach from '@/assets/sample-background-beach.jpg';
 import sampleBackgroundChurch1 from '@/assets/sample-background-church-1.png';
 import sampleBackgroundChurch2 from '@/assets/sample-background-church-2.png';
@@ -96,18 +96,12 @@ const Index = () => {
     }
   };
 
-  // ---- 片方のみ必須に変更（将来両対応予定） ----
-  const selectedRole: 'bride' | 'groom' | null = images.bride
-    ? 'bride'
-    : images.groom
-    ? 'groom'
-    : null;
-
   const canGenerate =
-    !!selectedRole &&
-    !!images.background &&
-    ((selectedRole === 'bride' && !!images.dress) ||
-      (selectedRole === 'groom' && !!images.tuxedo));
+    !!images.bride &&
+    !!images.groom &&
+    !!images.dress &&
+    !!images.tuxedo &&
+    !!images.background;
 
   // 進捗をなめらかに（サーバの progress が無い場合のフォールバック）
   const tickProgress = (serverProgress?: number) => {
@@ -122,7 +116,7 @@ const Index = () => {
 
   const handleGenerateVideo = async () => {
     if (!canGenerate) {
-      toast.error('花嫁/花婿のどちらかの写真、対応する衣装、背景を選択してください');
+      toast.error('花嫁・花婿の写真、ドレス・タキシード、背景を選択してください');
       return;
     }
 
@@ -133,28 +127,34 @@ const Index = () => {
       setActiveTaskId(null);
       pollingAbortRef.current.aborted = false;
 
-      // 送る対象を決定（現状は片方のみ）
-      const character = selectedRole === 'bride' ? images.bride : images.groom;
-      const clothes = selectedRole === 'bride' ? images.dress : images.tuxedo;
-      const background = images.background;
-
-      if (!character || !clothes || !background) {
+      // 必須チェック（二重防止）
+      const { bride, groom, dress, tuxedo, background } = {
+        bride: images.bride,
+        groom: images.groom,
+        dress: images.dress,
+        tuxedo: images.tuxedo,
+        background: images.background,
+      };
+      if (!bride || !groom || !dress || !tuxedo || !background) {
         toast.error('入力が不足しています');
         setTaskStatus('error');
         return;
       }
 
-      // File or URL → Base64
-      const [ch, cl, bg] = await Promise.all([
-        fileOrUrlToBase64(character as File | string),
-        fileOrUrlToBase64(clothes as File | string),
+      // File or URL → Base64（5点）
+      const [br, gr, dr, tx, bg] = await Promise.all([
+        fileOrUrlToBase64(bride as File | string),
+        fileOrUrlToBase64(groom as File | string),
+        fileOrUrlToBase64(dress as File | string),
+        fileOrUrlToBase64(tuxedo as File | string),
         fileOrUrlToBase64(background as File | string),
       ]);
 
       const payload: CreateTaskRequest = {
-        character_image: { base64_data: ch.base64, mime_type: ch.mime },
-        // API 側の名前が dress_image なので、花婿でもここに衣装を入れる
-        dress_image: { base64_data: cl.base64, mime_type: cl.mime },
+        bride_image: { base64_data: br.base64, mime_type: br.mime },
+        groom_image: { base64_data: gr.base64, mime_type: gr.mime },
+        dress_image: { base64_data: dr.base64, mime_type: dr.mime },
+        tuxedo_image: { base64_data: tx.base64, mime_type: tx.mime },
         background_image: { base64_data: bg.base64, mime_type: bg.mime },
       };
 
@@ -237,8 +237,7 @@ const Index = () => {
           <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              {/* 片方でもOK */}
-              <span>人物写真 1〜2枚</span>
+              <span>人物写真 2枚（花嫁・花婿）</span>
             </div>
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
@@ -260,7 +259,7 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-primary" />
-                  人物写真のアップロード（現在は片方のみ対応）
+                  人物写真のアップロード（花嫁・花婿）
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -383,11 +382,7 @@ const Index = () => {
                   ) : (
                     <>
                       <Film className="h-4 w-4 mr-2" />
-                      {selectedRole === 'groom'
-                        ? '（花婿）動画を生成する'
-                        : selectedRole === 'bride'
-                        ? '（花嫁）動画を生成する'
-                        : '動画を生成する'}
+                      動画を生成する
                     </>
                   )}
                 </Button>

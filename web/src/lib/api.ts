@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type ServerTaskStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 
+type ImageData = { base64_data: string; mime_type: string };
+
 export interface CreateTaskRequest {
-  character_image: { base64_data: string; mime_type: string };
-  dress_image: { base64_data: string; mime_type: string }; // groom の場合もここに「衣装」を入れる
-  background_image: { base64_data: string; mime_type: string };
+  bride_image: ImageData;
+  groom_image: ImageData;
+  dress_image: ImageData;
+  tuxedo_image: ImageData;
+  background_image: ImageData;
 }
 
 export interface CreateTaskResponse {
