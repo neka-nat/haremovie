@@ -44,6 +44,7 @@ const Index = () => {
   const [images, setImages] = useState<UploadedImages>({});
   const [taskStatus, setTaskStatus] = useState<TaskStatus>('pending');
   const [progress, setProgress] = useState(0);
+  const [hasServerProgress, setHasServerProgress] = useState(false);
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | undefined>();
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
 
@@ -103,13 +104,11 @@ const Index = () => {
     !!images.tuxedo &&
     !!images.background;
 
-  // 進捗をなめらかに（サーバの progress が無い場合のフォールバック）
   const tickProgress = (serverProgress?: number) => {
     if (typeof serverProgress === 'number' && serverProgress >= 0 && serverProgress <= 100) {
       setProgress(serverProgress);
-      return;
+      setHasServerProgress(true);
     }
-    setProgress((p) => Math.min(99, p));
   };
 
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -122,7 +121,8 @@ const Index = () => {
 
     try {
       setTaskStatus('processing');
-      setProgress(3);
+      setProgress(0);
+      setHasServerProgress(false);
       setGeneratedVideoUrl(undefined);
       setActiveTaskId(null);
       pollingAbortRef.current.aborted = false;
@@ -166,7 +166,6 @@ const Index = () => {
       // ポーリング
       const started = Date.now();
       const timeoutMs = 15 * 60 * 1000; // 15分
-      setProgress(7);
 
       while (!pollingAbortRef.current.aborted && Date.now() - started < timeoutMs) {
         try {
@@ -178,6 +177,7 @@ const Index = () => {
             const result = await getTaskResult(task_id);
             setGeneratedVideoUrl(result.result_video_url);
             setProgress(100);
+            setHasServerProgress(true);
             setTaskStatus('completed');
             toast.success('動画が生成されました！');
             return;
@@ -387,7 +387,11 @@ const Index = () => {
                   )}
                 </Button>
 
-                <ProgressIndicator status={taskStatus} progress={progress} />
+                <ProgressIndicator
+                  status={taskStatus}
+                  progress={progress}
+                  indeterminate={taskStatus === 'processing' && !hasServerProgress}
+                />
                 {activeTaskId && (
                   <p className="text-xs text-muted-foreground text-center break-all">
                     タスクID: {activeTaskId}

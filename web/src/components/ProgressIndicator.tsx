@@ -10,6 +10,7 @@ interface ProgressIndicatorProps {
   progress: number;
   message?: string;
   className?: string;
+  indeterminate?: boolean;
 }
 
 const statusConfig = {
@@ -43,7 +44,8 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   status,
   progress,
   message,
-  className
+  className,
+  indeterminate = false
 }) => {
   const config = statusConfig[status];
   const Icon = config.icon;
@@ -62,15 +64,15 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
             {message || config.message}
           </p>
         </div>
-        <div className="text-right">
-          <span className={cn("text-lg font-bold", config.color)}>
-            {Math.round(progress)}%
+        <div className="text-right min-w-[3.5rem]">
+          <span className={cn("text-lg font-bold tabular-nums", config.color)}>
+            {status === 'processing' && indeterminate ? '—' : `${Math.round(progress)}%`}
           </span>
         </div>
       </div>
       
-      <Progress 
-        value={progress} 
+      <Progress
+        value={indeterminate && status === 'processing' ? 0 : progress}
         className="h-2"
       />
       
@@ -81,7 +83,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
             <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
             <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
           </div>
-          <span>AI が動画を生成しています</span>
+          <span>{indeterminate ? 'AI が準備しています…' : 'AI が動画を生成しています'}</span>
         </div>
       )}
     </div>

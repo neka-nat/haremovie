@@ -8,3 +8,7 @@ AIで結婚式動画を生成するアプリケーションです。
 - `api`: バックエンドとAIエージェント呼び出し用ワーカー(FastAPI)
 - `web`: フロントエンド(Next.js)
 - `infra`: インフラ(Terraform, GCP)
+
+## アーキテクチャ
+
+![arch](diagram/haremovie_architecture.png)

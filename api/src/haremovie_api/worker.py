@@ -95,7 +95,7 @@ async def run_task(
         video_url = None
         task = upsert_task(db, Task(id=task_id, status=TaskStatus.PROCESSING))
         current_step = 0
-        total_steps = 10
+        total_steps = 15  # 適当
         for event in adk_app.stream_query(
             user_id="test_user_001",
             session_id=session["id"],
