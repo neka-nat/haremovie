@@ -13,3 +13,7 @@ AIで結婚式動画を生成するアプリケーションです。
 ## アーキテクチャ
 
 ![arch](diagram/haremovie_architecture.png)
+
+## デモ
+
+https://github.com/user-attachments/assets/6bba6358-c123-46de-a616-4acc7fdb808a
